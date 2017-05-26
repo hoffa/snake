@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"time"
@@ -14,7 +15,7 @@ const (
 	FoodColor    = termbox.ColorRed
 	GrowAmount   = 10
 	ScoreStep    = 10
-	VerticalSkip = 2
+	VerticalSkip = 1 // no need for more than 1?
 )
 
 type Direction int
@@ -85,7 +86,7 @@ type Context struct {
 	verticalStep int
 }
 
-func (s *Snake) Grow() {
+func (s *Snake) Grow(ctx *Context) {
 	w, h := termbox.Size()
 	head := s.Head()
 	var c *Coord
@@ -111,13 +112,15 @@ func (s *Snake) Grow() {
 			c.x = 0
 		}
 	}
-	if !s.Occupies(c) {
+	if s.Occupies(c) {
+		ctx.quit = true
+	} else {
 		s.Push(c)
 	}
 }
 
-func (s *Snake) Move() {
-	s.Grow()
+func (s *Snake) Move(ctx *Context) {
+	s.Grow(ctx)
 	if s.grow <= 0 {
 		s.Pop()
 	} else {
@@ -149,7 +152,7 @@ func (ctx *Context) Update() {
 		}
 	}
 	ctx.verticalStep = 0
-	ctx.snake.Move()
+	ctx.snake.Move(ctx)
 	if ctx.snake.Occupies(ctx.food) {
 		ctx.score += ScoreStep
 		ctx.snake.grow += GrowAmount
@@ -205,7 +208,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer termbox.Close()
 
 	events := make(chan termbox.Event)
 	go func() {
@@ -219,6 +221,7 @@ func main() {
 	ctx.RespawnFood()
 
 	for !ctx.quit {
+		ctx.Update()
 		select {
 		case e := <-events:
 			switch e.Type {
@@ -230,9 +233,11 @@ func main() {
 				}
 			}
 		default:
-			ctx.Update()
 			ctx.Draw()
 			time.Sleep(Interval)
 		}
 	}
+
+	termbox.Close()
+	fmt.Println("Game over! Your score is", ctx.score)
 }
