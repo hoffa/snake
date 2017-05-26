@@ -31,10 +31,6 @@ type Coord struct {
 	x, y int
 }
 
-func NewCoord(x, y int) *Coord {
-	return &Coord{x: x, y: y}
-}
-
 func (c *Coord) Draw(color termbox.Attribute) {
 	termbox.SetCell(c.x, c.y, ' ', termbox.ColorDefault, color)
 }
@@ -65,17 +61,14 @@ type Snake struct {
 }
 
 func NewSnake(x, y int) *Snake {
-	var body []*Coord
-	coords := make(map[Coord]bool)
-	head := NewCoord(x, y)
-	body = append(body, head)
-	coords[*head] = true
-	return &Snake{
+	snake := &Snake{
 		direction: Up,
-		body:      body,
-		coords:    coords,
+		body:      make([]*Coord, 0),
+		coords:    make(map[Coord]bool),
 		grow:      GrowAmount,
 	}
+	snake.Push(&Coord{x, y})
+	return snake
 }
 
 type Context struct {
@@ -89,25 +82,25 @@ type Context struct {
 func (s *Snake) Grow(ctx *Context) {
 	w, h := termbox.Size()
 	head := s.Head()
-	var c *Coord
+	c := &Coord{head.x, head.y}
 	switch s.direction {
 	case Up:
-		c = NewCoord(head.x, head.y-1)
+		c.y--
 		if c.y < 0 {
 			c.y = h - 1
 		}
 	case Down:
-		c = NewCoord(head.x, head.y+1)
+		c.y++
 		if c.y >= h {
 			c.y = 0
 		}
 	case Left:
-		c = NewCoord(head.x-1, head.y)
+		c.x--
 		if c.x < 0 {
 			c.x = w - 1
 		}
 	case Right:
-		c = NewCoord(head.x+1, head.y)
+		c.x++
 		if c.x >= w {
 			c.x = 0
 		}
@@ -132,7 +125,7 @@ func NewContext() *Context {
 	w, h := termbox.Size()
 	return &Context{
 		snake: NewSnake(w/2, h/2),
-		food:  NewCoord(-1, -1),
+		food:  &Coord{-1, -1},
 	}
 }
 
