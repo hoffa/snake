@@ -16,6 +16,7 @@ const (
 	GrowAmount   = 10
 	ScoreStep    = 10
 	VerticalSkip = 1 // no need for more than 1?
+	FoodCount    = 10
 )
 
 type Direction int
@@ -75,7 +76,7 @@ type Context struct {
 	quit         bool
 	score        int
 	snake        *Snake
-	food         *Coord
+	foods        map[Coord]bool
 	verticalStep int
 }
 
@@ -125,14 +126,14 @@ func NewContext() *Context {
 	w, h := termbox.Size()
 	return &Context{
 		snake: NewSnake(w/2, h/2),
-		food:  &Coord{-1, -1},
+		foods: make(map[Coord]bool, 0),
 	}
 }
 
 func (ctx *Context) Draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	PrintInt(0, 0, ctx.score, termbox.ColorWhite)
-	ctx.food.Draw(FoodColor)
+	ctx.DrawFoods()
 	ctx.snake.Draw()
 	termbox.Flush()
 }
@@ -146,17 +147,28 @@ func (ctx *Context) Update() {
 	}
 	ctx.verticalStep = 0
 	ctx.snake.Move(ctx)
-	if ctx.snake.Occupies(ctx.food) {
-		ctx.score += ScoreStep
-		ctx.snake.grow += GrowAmount
-		ctx.RespawnFood()
+	for food := range ctx.foods {
+		if ctx.snake.Occupies(&food) {
+			ctx.score += ScoreStep
+			ctx.snake.grow += GrowAmount
+			delete(ctx.foods, food)
+			ctx.AddFood()
+		}
 	}
 }
 
-func (ctx *Context) RespawnFood() {
+func (ctx *Context) AddFood() {
 	w, h := termbox.Size()
-	ctx.food.x = Random(0, w-1)
-	ctx.food.y = Random(0, h-1)
+	for len(ctx.foods) < FoodCount {
+		food := Coord{Random(0, w-1), Random(0, h-1)}
+		ctx.foods[food] = true
+	}
+}
+
+func (ctx *Context) DrawFoods() {
+	for food := range ctx.foods {
+		food.Draw(FoodColor)
+	}
 }
 
 func (s *Snake) Draw() {
@@ -211,7 +223,7 @@ func main() {
 
 	ctx := NewContext()
 	rand.Seed(time.Now().Unix())
-	ctx.RespawnFood()
+	ctx.AddFood()
 
 	for !ctx.quit {
 		ctx.Update()
