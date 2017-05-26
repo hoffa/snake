@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	Interval   = 50 * time.Millisecond
-	SnakeColor = termbox.ColorGreen
-	FoodColor  = termbox.ColorRed
-	GrowAmount = 10
-	ScoreStep  = 1000
+	Interval     = 25 * time.Millisecond
+	SnakeColor   = termbox.ColorGreen
+	FoodColor    = termbox.ColorRed
+	GrowAmount   = 10
+	ScoreStep    = 10
+	VerticalSkip = 2
 )
 
 type Direction int
@@ -39,11 +40,11 @@ func (c *Coord) Draw(color termbox.Attribute) {
 
 func (s *Snake) Push(c *Coord) {
 	s.body = append(s.body, c)
-	s.coords[c] = true
+	s.coords[*c] = true
 }
 
 func (s *Snake) Pop() {
-	delete(s.coords, s.body[0])
+	delete(s.coords, *s.body[0])
 	s.body = s.body[1:]
 }
 
@@ -52,48 +53,66 @@ func (s *Snake) Head() *Coord {
 }
 
 func (s *Snake) Occupies(c *Coord) bool {
-	return s.coords[c]
+	return s.coords[*c]
 }
 
 type Snake struct {
 	direction Direction
 	body      []*Coord
-	coords    map[*Coord]bool
+	coords    map[Coord]bool
 	grow      int // Amount left to grow
 }
 
 func NewSnake(x, y int) *Snake {
 	var body []*Coord
-	coords := make(map[*Coord]bool)
+	coords := make(map[Coord]bool)
 	head := NewCoord(x, y)
 	body = append(body, head)
-	coords[head] = true
+	coords[*head] = true
 	return &Snake{
 		direction: Up,
 		body:      body,
 		coords:    coords,
-		grow:      10,
+		grow:      GrowAmount,
 	}
 }
 
 type Context struct {
-	quit  bool
-	score int
-	snake *Snake
-	food  *Coord
+	quit         bool
+	score        int
+	snake        *Snake
+	food         *Coord
+	verticalStep int
 }
 
 func (s *Snake) Grow() {
+	w, h := termbox.Size()
 	head := s.Head()
+	var c *Coord
 	switch s.direction {
 	case Up:
-		s.Push(NewCoord(head.x, head.y-1))
+		c = NewCoord(head.x, head.y-1)
+		if c.y < 0 {
+			c.y = h - 1
+		}
 	case Down:
-		s.Push(NewCoord(head.x, head.y+1))
+		c = NewCoord(head.x, head.y+1)
+		if c.y >= h {
+			c.y = 0
+		}
 	case Left:
-		s.Push(NewCoord(head.x-1, head.y))
+		c = NewCoord(head.x-1, head.y)
+		if c.x < 0 {
+			c.x = w - 1
+		}
 	case Right:
-		s.Push(NewCoord(head.x+1, head.y))
+		c = NewCoord(head.x+1, head.y)
+		if c.x >= w {
+			c.x = 0
+		}
+	}
+	if !s.Occupies(c) {
+		s.Push(c)
 	}
 }
 
@@ -123,8 +142,14 @@ func (ctx *Context) Draw() {
 }
 
 func (ctx *Context) Update() {
-	// also how to check if ate itself? can't check head
-	// cant go against itself
+	if ctx.snake.direction == Up || ctx.snake.direction == Down {
+		ctx.verticalStep++
+		if ctx.verticalStep <= VerticalSkip {
+			return
+		}
+	}
+	ctx.verticalStep = 0
+	ctx.snake.Move()
 	if ctx.snake.Occupies(ctx.food) {
 		ctx.score += ScoreStep
 		ctx.snake.grow += GrowAmount
@@ -157,13 +182,21 @@ func Random(min, max int) int {
 func (ctx *Context) HandleKey(key termbox.Key) {
 	switch key {
 	case termbox.KeyArrowUp:
-		ctx.snake.direction = Up
+		if ctx.snake.direction != Down {
+			ctx.snake.direction = Up
+		}
 	case termbox.KeyArrowDown:
-		ctx.snake.direction = Down
+		if ctx.snake.direction != Up {
+			ctx.snake.direction = Down
+		}
 	case termbox.KeyArrowLeft:
-		ctx.snake.direction = Left
+		if ctx.snake.direction != Right {
+			ctx.snake.direction = Left
+		}
 	case termbox.KeyArrowRight:
-		ctx.snake.direction = Right
+		if ctx.snake.direction != Left {
+			ctx.snake.direction = Right
+		}
 	}
 }
 
@@ -197,7 +230,6 @@ func main() {
 				}
 			}
 		default:
-			ctx.snake.Move()
 			ctx.Update()
 			ctx.Draw()
 			time.Sleep(Interval)
