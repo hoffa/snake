@@ -12,8 +12,7 @@ import (
 const (
 	Speed           = 25 * time.Millisecond
 	GrowAmount      = 15
-	VerticalSkip    = 1
-	FoodCount       = 1
+	FoodCount       = 5
 	TextColor       = termbox.ColorWhite
 	BackgroundColor = termbox.ColorDefault
 	SnakeColor      = termbox.ColorWhite
@@ -41,10 +40,10 @@ type Snake struct {
 }
 
 type Context struct {
-	quit         bool
-	snake        *Snake
-	foods        map[Coord]bool
-	verticalStep int
+	quit  bool
+	snake *Snake
+	foods map[Coord]bool
+	skip  bool
 }
 
 func Random(min, max int) int {
@@ -149,13 +148,13 @@ func (ctx *Context) Draw() {
 }
 
 func (ctx *Context) Update() {
+	ctx.skip = !ctx.skip
 	if ctx.snake.direction == Up || ctx.snake.direction == Down {
-		ctx.verticalStep++
-		if ctx.verticalStep <= VerticalSkip {
+		if ctx.skip {
 			return
 		}
 	}
-	ctx.verticalStep = 0
+	ctx.skip = false
 	ctx.snake.Move(ctx)
 	for food := range ctx.foods {
 		if ctx.snake.Occupies(&food) {
