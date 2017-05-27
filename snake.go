@@ -31,6 +31,41 @@ type Coord struct {
 	x, y int
 }
 
+type Snake struct {
+	direction Direction
+	body      []*Coord
+	coords    map[Coord]bool
+	grow      int // Amount left to grow
+}
+
+type Context struct {
+	quit         bool
+	snake        *Snake
+	foods        map[Coord]bool
+	verticalStep int
+}
+
+func Random(min, max int) int {
+	return rand.Intn(max-min) + min
+}
+
+func PrintInt(x, y, val int, color termbox.Attribute) {
+	for i, c := range strconv.Itoa(val) {
+		termbox.SetCell(x+i, y, c, color, termbox.ColorDefault)
+	}
+}
+
+func NewSnake(x, y int) *Snake {
+	snake := &Snake{
+		direction: Up,
+		body:      make([]*Coord, 0),
+		coords:    make(map[Coord]bool),
+		grow:      GrowAmount,
+	}
+	snake.Push(&Coord{x, y})
+	return snake
+}
+
 func (c *Coord) Draw(color termbox.Attribute) {
 	termbox.SetCell(c.x, c.y, ' ', termbox.ColorDefault, color)
 }
@@ -53,34 +88,10 @@ func (s *Snake) Occupies(c *Coord) bool {
 	return s.coords[*c]
 }
 
-type Snake struct {
-	direction Direction
-	body      []*Coord
-	coords    map[Coord]bool
-	grow      int // Amount left to grow
-}
-
-func NewSnake(x, y int) *Snake {
-	snake := &Snake{
-		direction: Up,
-		body:      make([]*Coord, 0),
-		coords:    make(map[Coord]bool),
-		grow:      GrowAmount,
-	}
-	snake.Push(&Coord{x, y})
-	return snake
-}
-
-type Context struct {
-	quit         bool
-	snake        *Snake
-	foods        map[Coord]bool
-	verticalStep int
-}
-
 func (s *Snake) Grow(ctx *Context) {
 	w, h := termbox.Size()
-	c := *s.Head()
+	head := s.Head()
+	c := &Coord{head.x, head.y}
 	switch s.direction {
 	case Up:
 		c.y--
@@ -103,10 +114,10 @@ func (s *Snake) Grow(ctx *Context) {
 			c.x = 0
 		}
 	}
-	if s.Occupies(&c) {
+	if s.Occupies(c) {
 		ctx.quit = true
 	} else {
-		s.Push(&c)
+		s.Push(c)
 	}
 }
 
@@ -123,7 +134,7 @@ func NewContext() *Context {
 	w, h := termbox.Size()
 	return &Context{
 		snake: NewSnake(w/2, h/2),
-		foods: make(map[Coord]bool, 0),
+		foods: make(map[Coord]bool),
 	}
 }
 
@@ -148,9 +159,9 @@ func (ctx *Context) Update() {
 		if ctx.snake.Occupies(&food) {
 			ctx.snake.grow += GrowAmount
 			delete(ctx.foods, food)
-			ctx.AddFood()
 		}
 	}
+	ctx.AddFood()
 }
 
 func (ctx *Context) AddFood() {
@@ -171,16 +182,6 @@ func (s *Snake) Draw() {
 	for _, c := range s.body {
 		c.Draw(SnakeColor)
 	}
-}
-
-func PrintInt(x, y, val int, color termbox.Attribute) {
-	for i, c := range strconv.Itoa(val) {
-		termbox.SetCell(x+i, y, c, color, termbox.ColorDefault)
-	}
-}
-
-func Random(min, max int) int {
-	return rand.Intn(max-min) + min
 }
 
 func (ctx *Context) Score() int {
@@ -223,7 +224,6 @@ func main() {
 
 	ctx := NewContext()
 	rand.Seed(time.Now().Unix())
-	ctx.AddFood()
 
 	for !ctx.quit {
 		ctx.Update()
