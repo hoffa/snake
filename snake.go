@@ -10,12 +10,14 @@ import (
 )
 
 const (
-	Speed        = 25 * time.Millisecond
-	SnakeColor   = termbox.ColorGreen
-	FoodColor    = termbox.ColorWhite
-	GrowAmount   = 10
-	VerticalSkip = 1 // no need for more than 1?
-	FoodCount    = 1
+	Speed           = 25 * time.Millisecond
+	GrowAmount      = 15
+	VerticalSkip    = 1
+	FoodCount       = 1
+	TextColor       = termbox.ColorWhite
+	BackgroundColor = termbox.ColorDefault
+	SnakeColor      = termbox.ColorWhite
+	FoodColor       = termbox.ColorWhite
 )
 
 type Direction int
@@ -49,9 +51,9 @@ func Random(min, max int) int {
 	return rand.Intn(max-min) + min
 }
 
-func PrintInt(x, y, val int, color termbox.Attribute) {
+func PrintInt(x, y, val int) {
 	for i, c := range strconv.Itoa(val) {
-		termbox.SetCell(x+i, y, c, color, termbox.ColorDefault)
+		termbox.SetCell(x+i, y, c, TextColor, BackgroundColor)
 	}
 }
 
@@ -67,7 +69,7 @@ func NewSnake(x, y int) *Snake {
 }
 
 func (c *Coord) Draw(color termbox.Attribute) {
-	termbox.SetCell(c.x, c.y, ' ', termbox.ColorDefault, color)
+	termbox.SetCell(c.x, c.y, ' ', BackgroundColor, color)
 }
 
 func (s *Snake) Push(c *Coord) {
@@ -139,8 +141,8 @@ func NewContext() *Context {
 }
 
 func (ctx *Context) Draw() {
-	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	PrintInt(0, 0, ctx.Score(), termbox.ColorWhite)
+	termbox.Clear(BackgroundColor, BackgroundColor)
+	PrintInt(0, 0, ctx.Score())
 	ctx.DrawFoods()
 	ctx.snake.Draw()
 	termbox.Flush()
