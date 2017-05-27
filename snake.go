@@ -11,10 +11,9 @@ import (
 
 const (
 	Interval     = 25 * time.Millisecond
-	SnakeColor   = termbox.ColorGreen
-	FoodColor    = termbox.ColorRed
+	SnakeColor   = termbox.ColorWhite
+	FoodColor    = termbox.ColorWhite
 	GrowAmount   = 10
-	ScoreStep    = 10
 	VerticalSkip = 1 // no need for more than 1?
 	FoodCount    = 10
 )
@@ -74,7 +73,6 @@ func NewSnake(x, y int) *Snake {
 
 type Context struct {
 	quit         bool
-	score        int
 	snake        *Snake
 	foods        map[Coord]bool
 	verticalStep int
@@ -132,7 +130,7 @@ func NewContext() *Context {
 
 func (ctx *Context) Draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	PrintInt(0, 0, ctx.score, termbox.ColorWhite)
+	PrintInt(0, 0, ctx.Score(), termbox.ColorWhite)
 	ctx.DrawFoods()
 	ctx.snake.Draw()
 	termbox.Flush()
@@ -149,7 +147,6 @@ func (ctx *Context) Update() {
 	ctx.snake.Move(ctx)
 	for food := range ctx.foods {
 		if ctx.snake.Occupies(&food) {
-			ctx.score += ScoreStep
 			ctx.snake.grow += GrowAmount
 			delete(ctx.foods, food)
 			ctx.AddFood()
@@ -185,6 +182,10 @@ func PrintInt(x, y, val int, color termbox.Attribute) {
 
 func Random(min, max int) int {
 	return rand.Intn(max-min) + min
+}
+
+func (ctx *Context) Score() int {
+	return len(ctx.snake.body) - 1
 }
 
 func (ctx *Context) HandleKey(key termbox.Key) {
@@ -244,5 +245,5 @@ func main() {
 	}
 
 	termbox.Close()
-	fmt.Println("Game over! Your score is", ctx.score)
+	fmt.Println("Game over! Your score is", ctx.Score())
 }
