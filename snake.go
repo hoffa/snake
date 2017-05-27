@@ -11,11 +11,11 @@ import (
 
 const (
 	Interval     = 25 * time.Millisecond
-	SnakeColor   = termbox.ColorWhite
+	SnakeColor   = termbox.ColorGreen
 	FoodColor    = termbox.ColorWhite
 	GrowAmount   = 10
 	VerticalSkip = 1 // no need for more than 1?
-	FoodCount    = 10
+	FoodCount    = 1
 )
 
 type Direction int
@@ -80,8 +80,7 @@ type Context struct {
 
 func (s *Snake) Grow(ctx *Context) {
 	w, h := termbox.Size()
-	head := s.Head()
-	c := &Coord{head.x, head.y}
+	c := *s.Head()
 	switch s.direction {
 	case Up:
 		c.y--
@@ -104,10 +103,10 @@ func (s *Snake) Grow(ctx *Context) {
 			c.x = 0
 		}
 	}
-	if s.Occupies(c) {
+	if s.Occupies(&c) {
 		ctx.quit = true
 	} else {
-		s.Push(c)
+		s.Push(&c)
 	}
 }
 
