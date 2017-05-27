@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Interval     = 25 * time.Millisecond
+	Speed        = 25 * time.Millisecond
 	SnakeColor   = termbox.ColorGreen
 	FoodColor    = termbox.ColorWhite
 	GrowAmount   = 10
@@ -161,10 +161,10 @@ func (ctx *Context) Update() {
 			delete(ctx.foods, food)
 		}
 	}
-	ctx.AddFood()
+	ctx.AddFoods()
 }
 
-func (ctx *Context) AddFood() {
+func (ctx *Context) AddFoods() {
 	w, h := termbox.Size()
 	for len(ctx.foods) < FoodCount {
 		food := Coord{Random(0, w-1), Random(0, h-1)}
@@ -239,7 +239,7 @@ func main() {
 			}
 		default:
 			ctx.Draw()
-			time.Sleep(Interval)
+			time.Sleep(Speed)
 		}
 	}
 
