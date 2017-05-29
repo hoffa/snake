@@ -13,10 +13,10 @@ const (
 	Speed           = 25 * time.Millisecond
 	GrowAmount      = 15
 	FoodCount       = 5
-	TextColor       = termbox.ColorWhite
+	TextColor       = termbox.ColorGreen
 	BackgroundColor = termbox.ColorDefault
-	SnakeColor      = termbox.ColorWhite
-	FoodColor       = termbox.ColorWhite
+	SnakeColor      = termbox.ColorGreen
+	FoodColor       = termbox.ColorGreen
 )
 
 type Direction int
@@ -89,7 +89,7 @@ func (s *Snake) Occupies(c *Coord) bool {
 	return s.coords[*c]
 }
 
-func (s *Snake) Grow(ctx *Context) {
+func (ctx *Context) Grow(s *Snake) {
 	w, h := termbox.Size()
 	head := s.Head()
 	c := &Coord{head.x, head.y}
@@ -122,8 +122,8 @@ func (s *Snake) Grow(ctx *Context) {
 	}
 }
 
-func (s *Snake) Move(ctx *Context) {
-	s.Grow(ctx)
+func (ctx *Context) Move(s *Snake) {
+	ctx.Grow(s)
 	if s.grow <= 0 {
 		s.Pop()
 	} else {
@@ -148,14 +148,15 @@ func (ctx *Context) Draw() {
 }
 
 func (ctx *Context) Update() {
-	ctx.skip = !ctx.skip
 	if ctx.snake.direction == Up || ctx.snake.direction == Down {
+		ctx.skip = !ctx.skip
 		if ctx.skip {
 			return
 		}
+	} else {
+		ctx.skip = false
 	}
-	ctx.skip = false
-	ctx.snake.Move(ctx)
+	ctx.Move(ctx.snake)
 	for food := range ctx.foods {
 		if ctx.snake.Occupies(&food) {
 			ctx.snake.grow += GrowAmount
