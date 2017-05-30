@@ -11,7 +11,7 @@ import (
 
 const (
 	Speed           = 25 * time.Millisecond
-	GrowAmount      = 15
+	GrowAmount      = 10
 	FoodCount       = 5
 	TextColor       = termbox.ColorGreen
 	BackgroundColor = termbox.ColorDefault
@@ -56,6 +56,10 @@ func PrintInt(x, y, val int) {
 	}
 }
 
+func (c *Coord) Draw(color termbox.Attribute) {
+	termbox.SetCell(c.x, c.y, ' ', BackgroundColor, color)
+}
+
 func NewSnake(x, y int) *Snake {
 	snake := &Snake{
 		direction: Up,
@@ -67,8 +71,10 @@ func NewSnake(x, y int) *Snake {
 	return snake
 }
 
-func (c *Coord) Draw(color termbox.Attribute) {
-	termbox.SetCell(c.x, c.y, ' ', BackgroundColor, color)
+func (s *Snake) Draw() {
+	for _, c := range s.body {
+		c.Draw(SnakeColor)
+	}
 }
 
 func (s *Snake) Push(c *Coord) {
@@ -87,6 +93,14 @@ func (s *Snake) Head() *Coord {
 
 func (s *Snake) Occupies(c *Coord) bool {
 	return s.coords[*c]
+}
+
+func NewContext() *Context {
+	w, h := termbox.Size()
+	return &Context{
+		snake: NewSnake(w/2, h/2),
+		foods: make(map[Coord]bool),
+	}
 }
 
 func (ctx *Context) Grow(s *Snake) {
@@ -131,14 +145,6 @@ func (ctx *Context) Move(s *Snake) {
 	}
 }
 
-func NewContext() *Context {
-	w, h := termbox.Size()
-	return &Context{
-		snake: NewSnake(w/2, h/2),
-		foods: make(map[Coord]bool),
-	}
-}
-
 func (ctx *Context) Draw() {
 	termbox.Clear(BackgroundColor, BackgroundColor)
 	PrintInt(0, 0, ctx.Score())
@@ -177,12 +183,6 @@ func (ctx *Context) AddFoods() {
 func (ctx *Context) DrawFoods() {
 	for food := range ctx.foods {
 		food.Draw(FoodColor)
-	}
-}
-
-func (s *Snake) Draw() {
-	for _, c := range s.body {
-		c.Draw(SnakeColor)
 	}
 }
 
