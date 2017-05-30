@@ -1,6 +1,6 @@
-# snake
+# 🐍 snake
 
-![](https://media.giphy.com/media/l4FGHjVb28GkDtXDq/giphy.gif)
+![](https://media.giphy.com/media/3oKIPmo4TQoPTtg772/giphy.gif)
 
 Note: the game isn't actually *that* fast
 
