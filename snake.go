@@ -46,10 +46,6 @@ type Context struct {
 	skip  bool
 }
 
-func Random(min, max int) int {
-	return rand.Intn(max-min) + min
-}
-
 func PrintInt(x, y, val int) {
 	for i, c := range strconv.Itoa(val) {
 		termbox.SetCell(x+i, y, c, TextColor, BackgroundColor)
@@ -175,7 +171,7 @@ func (ctx *Context) Update() {
 func (ctx *Context) AddFoods() {
 	w, h := termbox.Size()
 	for len(ctx.foods) < FoodCount {
-		food := Coord{Random(0, w-1), Random(0, h-1)}
+		food := Coord{rand.Intn(w - 1), rand.Intn(h - 1)}
 		ctx.foods[food] = true
 	}
 }
