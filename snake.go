@@ -150,10 +150,13 @@ func (ctx *Context) Draw() {
 }
 
 func (ctx *Context) Update() {
-	ctx.skip = !ctx.skip
-	vertical := ctx.snake.direction == Up || ctx.snake.direction == Down
-	if vertical && ctx.skip {
-		return
+	if ctx.snake.direction == Up || ctx.snake.direction == Down {
+		ctx.skip = !ctx.skip
+		if ctx.skip {
+			return
+		}
+	} else {
+		ctx.skip = false
 	}
 	ctx.Move(ctx.snake)
 	for food := range ctx.foods {
@@ -210,32 +213,35 @@ func poll(events chan termbox.Event) {
 	}
 }
 
+func update(ctx *Context, events chan termbox.Event) {
+	ctx.Update()
+	select {
+	case e := <-events:
+		switch e.Type {
+		case termbox.EventKey:
+			ctx.HandleKey(e.Key)
+		}
+	default:
+		ctx.Draw()
+		time.Sleep(Speed)
+	}
+}
+
 func main() {
 	err := termbox.Init()
 	if err != nil {
 		panic(err)
 	}
+	defer termbox.Close()
 
 	events := make(chan termbox.Event)
 	go poll(events)
 
 	ctx := NewContext()
 	rand.Seed(time.Now().Unix())
-
 	for !ctx.quit {
-		ctx.Update()
-		select {
-		case e := <-events:
-			switch e.Type {
-			case termbox.EventKey:
-				ctx.HandleKey(e.Key)
-			}
-		default:
-			ctx.Draw()
-			time.Sleep(Speed)
-		}
+		update(ctx, events)
 	}
 
-	termbox.Close()
 	fmt.Println("Game over! Your score is", ctx.Score())
 }
