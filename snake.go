@@ -204,6 +204,12 @@ func (ctx *Context) HandleKey(key termbox.Key) {
 	}
 }
 
+func poll(events chan termbox.Event) {
+	for {
+		events <- termbox.PollEvent()
+	}
+}
+
 func main() {
 	err := termbox.Init()
 	if err != nil {
@@ -211,11 +217,7 @@ func main() {
 	}
 
 	events := make(chan termbox.Event)
-	go func() {
-		for {
-			events <- termbox.PollEvent()
-		}
-	}()
+	go poll(events)
 
 	ctx := NewContext()
 	rand.Seed(time.Now().Unix())
@@ -226,11 +228,7 @@ func main() {
 		case e := <-events:
 			switch e.Type {
 			case termbox.EventKey:
-				if e.Key == termbox.KeyEsc {
-					ctx.quit = true
-				} else {
-					ctx.HandleKey(e.Key)
-				}
+				ctx.HandleKey(e.Key)
 			}
 		default:
 			ctx.Draw()
