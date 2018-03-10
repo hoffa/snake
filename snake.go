@@ -151,10 +151,9 @@ func (ctx *Context) Draw() {
 
 func (ctx *Context) Update() {
 	ctx.skip = !ctx.skip
-	if ctx.snake.direction == Up || ctx.snake.direction == Down {
-		if ctx.skip {
-			return
-		}
+	vertical := ctx.snake.direction == Up || ctx.snake.direction == Down
+	if vertical && ctx.skip {
+		return
 	}
 	ctx.Move(ctx.snake)
 	for food := range ctx.foods {
