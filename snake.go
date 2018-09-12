@@ -46,31 +46,19 @@ type Context struct {
 	skip  bool
 }
 
-func PrintInt(x, y, val int) {
-	for i, c := range strconv.Itoa(val) {
-		termbox.SetCell(x+i, y, c, TextColor, BackgroundColor)
-	}
-}
-
 func (c *Coord) Draw(color termbox.Attribute) {
 	termbox.SetCell(c.x, c.y, ' ', BackgroundColor, color)
 }
 
 func NewSnake(x, y int) *Snake {
-	snake := &Snake{
+	s := &Snake{
 		direction: Up,
 		body:      make([]*Coord, 0),
 		coords:    make(map[Coord]bool),
 		grow:      GrowAmount,
 	}
-	snake.Push(&Coord{x, y})
-	return snake
-}
-
-func (s *Snake) Draw() {
-	for _, c := range s.body {
-		c.Draw(SnakeColor)
-	}
+	s.Push(&Coord{x, y})
+	return s
 }
 
 func (s *Snake) Push(c *Coord) {
@@ -143,9 +131,15 @@ func (ctx *Context) Move(s *Snake) {
 
 func (ctx *Context) Draw() {
 	termbox.Clear(BackgroundColor, BackgroundColor)
-	PrintInt(0, 0, ctx.Score())
-	ctx.DrawFoods()
-	ctx.snake.Draw()
+	for i, c := range strconv.Itoa(ctx.Score()) {
+		termbox.SetCell(i, 0, c, TextColor, BackgroundColor)
+	}
+	for food := range ctx.foods {
+		food.Draw(FoodColor)
+	}
+	for _, c := range ctx.snake.body {
+		c.Draw(SnakeColor)
+	}
 	termbox.Flush()
 }
 
@@ -176,12 +170,6 @@ func (ctx *Context) AddFoods() {
 	}
 }
 
-func (ctx *Context) DrawFoods() {
-	for food := range ctx.foods {
-		food.Draw(FoodColor)
-	}
-}
-
 func (ctx *Context) Score() int {
 	return len(ctx.snake.body) - 1
 }
@@ -207,12 +195,6 @@ func (ctx *Context) HandleKey(key termbox.Key) {
 	}
 }
 
-func poll(events chan termbox.Event) {
-	for {
-		events <- termbox.PollEvent()
-	}
-}
-
 func update(ctx *Context, events chan termbox.Event) {
 	ctx.Update()
 	select {
@@ -228,14 +210,17 @@ func update(ctx *Context, events chan termbox.Event) {
 }
 
 func main() {
-	err := termbox.Init()
-	if err != nil {
+	if err := termbox.Init(); err != nil {
 		panic(err)
 	}
 	defer termbox.Close()
 
 	events := make(chan termbox.Event)
-	go poll(events)
+	go func() {
+		for {
+			events <- termbox.PollEvent()
+		}
+	}()
 
 	ctx := NewContext()
 	rand.Seed(time.Now().Unix())
