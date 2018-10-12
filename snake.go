@@ -10,13 +10,10 @@ import (
 )
 
 const (
-	Speed           = 25 * time.Millisecond
-	GrowAmount      = 10
-	FoodCount       = 5
-	TextColor       = termbox.ColorGreen
-	BackgroundColor = termbox.ColorDefault
-	SnakeColor      = termbox.ColorGreen
-	FoodColor       = termbox.ColorGreen
+	Speed      = 25 * time.Millisecond
+	GrowAmount = 10
+	FoodCount  = 5
+	Color      = termbox.ColorGreen
 )
 
 type Direction int
@@ -46,8 +43,8 @@ type Context struct {
 	skip  bool
 }
 
-func (c *Coord) Draw(color termbox.Attribute) {
-	termbox.SetCell(c.x, c.y, ' ', BackgroundColor, color)
+func (c *Coord) Draw() {
+	termbox.SetCell(c.x, c.y, ' ', termbox.ColorDefault, Color)
 }
 
 func NewSnake(x, y int) *Snake {
@@ -130,15 +127,15 @@ func (ctx *Context) Move(s *Snake) {
 }
 
 func (ctx *Context) Draw() {
-	termbox.Clear(BackgroundColor, BackgroundColor)
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	for i, c := range strconv.Itoa(ctx.Score()) {
-		termbox.SetCell(i, 0, c, TextColor, BackgroundColor)
+		termbox.SetCell(i, 0, c, Color, termbox.ColorDefault)
 	}
 	for food := range ctx.foods {
-		food.Draw(FoodColor)
+		food.Draw()
 	}
 	for _, c := range ctx.snake.body {
-		c.Draw(SnakeColor)
+		c.Draw()
 	}
 	termbox.Flush()
 }
