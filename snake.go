@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Speed      = 50 * time.Millisecond
+	Interval   = int64(50 * time.Millisecond)
 	GrowAmount = 10
 	FoodCount  = 5
 )
@@ -36,9 +36,10 @@ type Snake struct {
 }
 
 type Context struct {
-	quit  bool
-	snake *Snake
-	foods map[Coord]bool
+	quit    bool
+	snake   *Snake
+	foods   map[Coord]bool
+	updated int64
 }
 
 func (c *Coord) Draw() {
@@ -166,7 +167,6 @@ func (ctx *Context) HandleKey(key termbox.Key) {
 }
 
 func update(ctx *Context, events chan termbox.Event) {
-	ctx.Update()
 	select {
 	case e := <-events:
 		switch e.Type {
@@ -174,8 +174,14 @@ func update(ctx *Context, events chan termbox.Event) {
 			ctx.HandleKey(e.Key)
 		}
 	default:
-		ctx.Draw()
-		time.Sleep(Speed)
+		now := time.Now().UnixNano()
+		elapsed := now - ctx.updated
+		if elapsed >= Interval {
+			ctx.Update()
+			ctx.Draw()
+			ctx.updated = now
+		}
+		time.Sleep(time.Duration(Interval - elapsed))
 	}
 }
 
