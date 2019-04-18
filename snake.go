@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Speed      = 25 * time.Millisecond
+	Speed      = 50 * time.Millisecond
 	GrowAmount = 10
 	FoodCount  = 5
 )
@@ -78,16 +78,14 @@ func NewContext() *Context {
 	}
 }
 
-func (ctx *Context) Grow(s *Snake) {
+func (ctx *Context) Move(s *Snake) {
 	w, h := termbox.Size()
 	c := *s.body[len(s.body)-1]
 	switch s.direction {
 	case Down:
-		c.y++
-		c.y %= h
+		c.y = (c.y + 1) % h
 	case Right:
-		c.x++
-		c.x %= w
+		c.x = (c.x + 1) % w
 	case Up:
 		c.y--
 		if c.y < 0 {
@@ -101,17 +99,12 @@ func (ctx *Context) Grow(s *Snake) {
 	}
 	if s.Occupies(&c) {
 		ctx.quit = true
-	} else {
-		s.Push(&c)
 	}
-}
-
-func (ctx *Context) Move(s *Snake) {
-	ctx.Grow(s)
-	if s.grow <= 0 {
-		s.Pop()
-	} else {
+	s.Push(&c)
+	if s.grow > 0 {
 		s.grow--
+	} else {
+		s.Pop()
 	}
 }
 
