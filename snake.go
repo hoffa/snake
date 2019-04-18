@@ -82,20 +82,22 @@ func (ctx *Context) Grow(s *Snake) {
 	w, h := termbox.Size()
 	c := *s.body[len(s.body)-1]
 	switch s.direction {
+	case Down:
+		c.y++
+		c.y %= h
+	case Right:
+		c.x++
+		c.x %= w
 	case Up:
 		c.y--
 		if c.y < 0 {
-			c.y = h - 1
+			c.y += h
 		}
-	case Down:
-		c.y = (c.y + 1) % h
 	case Left:
 		c.x--
 		if c.x < 0 {
-			c.x = w - 1
+			c.x += w
 		}
-	case Right:
-		c.x = (c.x + 1) % w
 	}
 	if s.Occupies(&c) {
 		ctx.quit = true
