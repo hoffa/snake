@@ -108,7 +108,15 @@ func (ctx *Context) Move(s *Snake) {
 	}
 }
 
-func (ctx *Context) Draw() {
+func (ctx *Context) Update() {
+	ctx.Move(ctx.snake)
+	ctx.AddFoods()
+	for food := range ctx.foods {
+		if ctx.snake.Occupies(&food) {
+			ctx.snake.grow += GrowAmount
+			delete(ctx.foods, food)
+		}
+	}
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	for i, c := range strconv.Itoa(ctx.Score()) {
 		termbox.SetCell(i, 0, c, termbox.ColorDefault, termbox.ColorDefault)
@@ -120,17 +128,6 @@ func (ctx *Context) Draw() {
 		c.Draw()
 	}
 	termbox.Flush()
-}
-
-func (ctx *Context) Update() {
-	ctx.Move(ctx.snake)
-	for food := range ctx.foods {
-		if ctx.snake.Occupies(&food) {
-			ctx.snake.grow += GrowAmount
-			delete(ctx.foods, food)
-		}
-	}
-	ctx.AddFoods()
 }
 
 func (ctx *Context) AddFoods() {
@@ -178,7 +175,6 @@ func update(ctx *Context, events chan termbox.Event) {
 		elapsed := now - ctx.updated
 		if elapsed >= Interval {
 			ctx.Update()
-			ctx.Draw()
 			ctx.updated = now
 		}
 		time.Sleep(time.Duration(Interval - elapsed))
