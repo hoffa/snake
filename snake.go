@@ -65,10 +65,6 @@ func (s *Snake) Pop() {
 	s.body = s.body[1:]
 }
 
-func (s *Snake) Head() *Coord {
-	return s.body[len(s.body)-1]
-}
-
 func (s *Snake) Occupies(c *Coord) bool {
 	return s.coords[*c]
 }
@@ -84,8 +80,7 @@ func NewContext() *Context {
 
 func (ctx *Context) Grow(s *Snake) {
 	w, h := termbox.Size()
-	head := s.Head()
-	c := &Coord{head.x, head.y}
+	c := *s.body[len(s.body)-1]
 	switch s.direction {
 	case Up:
 		c.y--
@@ -108,10 +103,10 @@ func (ctx *Context) Grow(s *Snake) {
 			c.x = 0
 		}
 	}
-	if s.Occupies(c) {
+	if s.Occupies(&c) {
 		ctx.quit = true
 	} else {
-		s.Push(c)
+		s.Push(&c)
 	}
 }
 
