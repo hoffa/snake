@@ -13,7 +13,6 @@ const (
 	Speed      = 25 * time.Millisecond
 	GrowAmount = 10
 	FoodCount  = 5
-	Color      = termbox.ColorGreen
 )
 
 type Direction int
@@ -44,7 +43,7 @@ type Context struct {
 }
 
 func (c *Coord) Draw() {
-	termbox.SetCell(c.x, c.y, ' ', termbox.ColorDefault, Color)
+	termbox.SetCell(c.x, c.y, ' ', termbox.ColorDefault, termbox.AttrReverse)
 }
 
 func NewSnake(x, y int) *Snake {
@@ -129,7 +128,7 @@ func (ctx *Context) Move(s *Snake) {
 func (ctx *Context) Draw() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	for i, c := range strconv.Itoa(ctx.Score()) {
-		termbox.SetCell(i, 0, c, Color, termbox.ColorDefault)
+		termbox.SetCell(i, 0, c, termbox.ColorDefault, termbox.ColorDefault)
 	}
 	for food := range ctx.foods {
 		food.Draw()
