@@ -88,20 +88,14 @@ func (ctx *Context) Grow(s *Snake) {
 			c.y = h - 1
 		}
 	case Down:
-		c.y++
-		if c.y >= h {
-			c.y = 0
-		}
+		c.y = (c.y + 1) % h
 	case Left:
 		c.x--
 		if c.x < 0 {
 			c.x = w - 1
 		}
 	case Right:
-		c.x++
-		if c.x >= w {
-			c.x = 0
-		}
+		c.x = (c.x + 1) % w
 	}
 	if s.Occupies(&c) {
 		ctx.quit = true
