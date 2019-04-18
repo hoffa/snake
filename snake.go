@@ -39,7 +39,6 @@ type Context struct {
 	quit  bool
 	snake *Snake
 	foods map[Coord]bool
-	skip  bool
 }
 
 func (c *Coord) Draw() {
@@ -123,14 +122,6 @@ func (ctx *Context) Draw() {
 }
 
 func (ctx *Context) Update() {
-	if ctx.snake.direction == Up || ctx.snake.direction == Down {
-		ctx.skip = !ctx.skip
-		if ctx.skip {
-			return
-		}
-	} else {
-		ctx.skip = false
-	}
 	ctx.Move(ctx.snake)
 	for food := range ctx.foods {
 		if ctx.snake.Occupies(&food) {
