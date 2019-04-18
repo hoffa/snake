@@ -46,15 +46,13 @@ func (c *Coord) Draw() {
 	termbox.SetCell(c.x, c.y, ' ', termbox.ColorDefault, termbox.AttrReverse)
 }
 
-func NewSnake(x, y int) *Snake {
-	s := &Snake{
-		direction: Up,
+func NewSnake() *Snake {
+	return &Snake{
+		direction: Right,
 		body:      make([]*Coord, 0),
 		coords:    make(map[Coord]bool),
 		grow:      GrowAmount,
 	}
-	s.Push(&Coord{x, y})
-	return s
 }
 
 func (s *Snake) Push(c *Coord) {
@@ -76,9 +74,10 @@ func (s *Snake) Occupies(c *Coord) bool {
 }
 
 func NewContext() *Context {
-	w, h := termbox.Size()
+	snake := NewSnake()
+	snake.Push(&Coord{})
 	return &Context{
-		snake: NewSnake(w/2, h/2),
+		snake: snake,
 		foods: make(map[Coord]bool),
 	}
 }
