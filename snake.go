@@ -163,24 +163,6 @@ func (ctx *Context) HandleKey(key termbox.Key) {
 	}
 }
 
-func update(ctx *Context, events chan termbox.Event) {
-	select {
-	case e := <-events:
-		switch e.Type {
-		case termbox.EventKey:
-			ctx.HandleKey(e.Key)
-		}
-	default:
-		now := time.Now().UnixNano()
-		elapsed := now - ctx.updated
-		if elapsed >= Interval {
-			ctx.Update()
-			ctx.updated = now
-		}
-		time.Sleep(time.Duration(Interval - elapsed))
-	}
-}
-
 func main() {
 	if err := termbox.Init(); err != nil {
 		panic(err)
@@ -197,7 +179,18 @@ func main() {
 	ctx := NewContext()
 	rand.Seed(time.Now().Unix())
 	for !ctx.quit {
-		update(ctx, events)
+		select {
+		case e := <-events:
+			ctx.HandleKey(e.Key)
+		default:
+			now := time.Now().UnixNano()
+			elapsed := now - ctx.updated
+			if elapsed >= Interval {
+				ctx.Update()
+				ctx.updated = now
+			}
+			time.Sleep(time.Duration(Interval - elapsed))
+		}
 	}
 
 	fmt.Println("Game over! Your score is", ctx.Score())
