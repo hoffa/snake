@@ -109,33 +109,27 @@ func (ctx *Context) Move(s *Snake) {
 }
 
 func (ctx *Context) Update() {
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	ctx.Move(ctx.snake)
-	ctx.AddFoods()
 	for food := range ctx.foods {
+		food.Draw()
 		if ctx.snake.Occupies(&food) {
 			ctx.snake.grow += GrowAmount
 			delete(ctx.foods, food)
 		}
 	}
-	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	for i, c := range strconv.Itoa(ctx.Score()) {
-		termbox.SetCell(i, 0, c, termbox.ColorDefault, termbox.ColorDefault)
-	}
-	for food := range ctx.foods {
-		food.Draw()
-	}
-	for _, c := range ctx.snake.body {
-		c.Draw()
-	}
-	termbox.Flush()
-}
-
-func (ctx *Context) AddFoods() {
 	w, h := termbox.Size()
 	for len(ctx.foods) < FoodCount {
 		food := Coord{rand.Intn(w - 1), rand.Intn(h - 1)}
 		ctx.foods[food] = true
 	}
+	for i, c := range strconv.Itoa(ctx.Score()) {
+		termbox.SetCell(i, 0, c, termbox.ColorDefault, termbox.ColorDefault)
+	}
+	for _, c := range ctx.snake.body {
+		c.Draw()
+	}
+	termbox.Flush()
 }
 
 func (ctx *Context) Score() int {
