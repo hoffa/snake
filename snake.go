@@ -161,7 +161,6 @@ func main() {
 	if err := termbox.Init(); err != nil {
 		panic(err)
 	}
-	defer termbox.Close()
 
 	events := make(chan termbox.Event)
 	go func() {
@@ -187,5 +186,6 @@ func main() {
 		}
 	}
 
+	termbox.Close()
 	fmt.Println("Game over! Your score is", ctx.Score())
 }
