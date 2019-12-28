@@ -114,7 +114,6 @@ func (ctx *Context) Move(s *Snake) {
 func (ctx *Context) Update() {
 	ctx.Move(ctx.snake)
 	for food := range ctx.foods {
-		food.Draw()
 		if ctx.snake.Occupies(&food) {
 			ctx.snake.grow += growAmount
 			delete(ctx.foods, food)
@@ -123,6 +122,7 @@ func (ctx *Context) Update() {
 	w, h := termbox.Size()
 	for len(ctx.foods) < foodCount {
 		food := Coord{rand.Intn(w - 1), rand.Intn(h - 1)}
+		food.Draw()
 		ctx.foods[food] = true
 	}
 	for i, c := range strconv.Itoa(ctx.Score()) {
