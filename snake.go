@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -9,11 +10,9 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-const (
-	Interval   = int64(50 * time.Millisecond)
-	GrowAmount = 10
-	FoodCount  = 5
-)
+var interval int64
+var growAmount int
+var foodCount int
 
 type Direction int
 
@@ -51,7 +50,7 @@ func NewSnake() *Snake {
 		direction: Right,
 		body:      make([]*Coord, 0),
 		coords:    make(map[Coord]bool),
-		grow:      GrowAmount,
+		grow:      growAmount,
 	}
 }
 
@@ -114,12 +113,12 @@ func (ctx *Context) Update() {
 	for food := range ctx.foods {
 		food.Draw()
 		if ctx.snake.Occupies(&food) {
-			ctx.snake.grow += GrowAmount
+			ctx.snake.grow += growAmount
 			delete(ctx.foods, food)
 		}
 	}
 	w, h := termbox.Size()
-	for len(ctx.foods) < FoodCount {
+	for len(ctx.foods) < foodCount {
 		food := Coord{rand.Intn(w - 1), rand.Intn(h - 1)}
 		ctx.foods[food] = true
 	}
@@ -158,6 +157,11 @@ func (ctx *Context) HandleKey(key termbox.Key) {
 }
 
 func main() {
+	flag.Int64Var(&interval, "interval", int64(50*time.Millisecond), "update interval")
+	flag.IntVar(&growAmount, "grow", 10, "grow amount per food")
+	flag.IntVar(&foodCount, "food", 5, "foods on screen")
+	flag.Parse()
+
 	if err := termbox.Init(); err != nil {
 		panic(err)
 	}
@@ -178,11 +182,11 @@ func main() {
 		default:
 			now := time.Now().UnixNano()
 			elapsed := now - ctx.updated
-			if elapsed >= Interval {
+			if elapsed >= interval {
 				ctx.Update()
 				ctx.updated = now
 			}
-			time.Sleep(time.Duration(Interval - elapsed))
+			time.Sleep(time.Duration(interval - elapsed))
 		}
 	}
 
