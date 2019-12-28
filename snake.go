@@ -13,6 +13,8 @@ import (
 var interval int64
 var growAmount int
 var foodCount int
+var color int
+var party bool
 
 type Direction int
 
@@ -42,7 +44,10 @@ type Context struct {
 }
 
 func (c *Coord) Draw() {
-	termbox.SetCell(c.x, c.y, ' ', termbox.ColorDefault, termbox.AttrReverse)
+	termbox.SetCell(c.x, c.y, ' ', termbox.Attribute((color%6)+2), termbox.AttrReverse)
+	if party {
+		color++
+	}
 }
 
 func NewSnake() *Snake {
@@ -162,6 +167,8 @@ func main() {
 	speed := flag.Int64("speed", 9, "speed [0, 10]")
 	flag.IntVar(&growAmount, "grow", 10, "grow amount per food")
 	flag.IntVar(&foodCount, "food", 5, "foods on screen")
+	flag.IntVar(&color, "color", 0, "color [0-9]")
+	flag.BoolVar(&party, "party", false, "enable party mode")
 	flag.Parse()
 	interval = int64(250-(250/10)*(*speed-1)) * int64(time.Millisecond)
 
