@@ -157,7 +157,7 @@ func (ctx *Context) HandleKey(key termbox.Key) {
 }
 
 func main() {
-	speed := flag.Int64("speed", 8, "speed [1, 10]")
+	speed := flag.Int64("speed", 9, "speed [0, 10]")
 	flag.IntVar(&growAmount, "grow", 10, "grow amount per food")
 	flag.IntVar(&foodCount, "food", 5, "foods on screen")
 	flag.Parse()
