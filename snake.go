@@ -44,7 +44,7 @@ type Context struct {
 }
 
 func (c *Coord) Draw() {
-	termbox.SetCell(c.x, c.y, ' ', termbox.Attribute((color%6)+2), termbox.AttrReverse)
+	termbox.SetCell(c.x, c.y, ' ', termbox.Attribute(color%8), termbox.AttrReverse)
 	if party {
 		color++
 	}
