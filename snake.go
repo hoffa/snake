@@ -137,6 +137,8 @@ func (ctx *Context) Score() int {
 
 func (ctx *Context) HandleKey(key termbox.Key) {
 	switch key {
+	case termbox.KeyEsc:
+		ctx.quit = true
 	case termbox.KeyArrowUp:
 		if ctx.snake.direction != Down {
 			ctx.snake.direction = Up
