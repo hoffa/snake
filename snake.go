@@ -99,6 +99,7 @@ func (ctx *Context) Move(s *Snake) {
 	if s.Occupies(&c) {
 		ctx.quit = true
 	}
+	c.Draw()
 	s.Push(&c)
 	if s.grow > 0 {
 		s.grow--
@@ -126,9 +127,6 @@ func (ctx *Context) Update() {
 	}
 	for i, c := range strconv.Itoa(ctx.Score()) {
 		termbox.SetCell(i, 0, c, termbox.ColorDefault, termbox.ColorDefault)
-	}
-	for _, c := range ctx.snake.body {
-		c.Draw()
 	}
 	termbox.Flush()
 }
