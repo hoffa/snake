@@ -157,10 +157,11 @@ func (ctx *Context) HandleKey(key termbox.Key) {
 }
 
 func main() {
-	flag.Int64Var(&interval, "interval", int64(50*time.Millisecond), "update interval")
+	speed := flag.Int64("speed", 8, "speed [1, 10]")
 	flag.IntVar(&growAmount, "grow", 10, "grow amount per food")
 	flag.IntVar(&foodCount, "food", 5, "foods on screen")
 	flag.Parse()
+	interval = int64(250-(250/10)*(*speed-1)) * int64(time.Millisecond)
 
 	if err := termbox.Init(); err != nil {
 		panic(err)
