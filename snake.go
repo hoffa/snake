@@ -103,12 +103,14 @@ func (ctx *Context) Move(s *Snake) {
 	if s.grow > 0 {
 		s.grow--
 	} else {
+		// Clear last cell
+		tail := *s.body[0]
+		termbox.SetCell(tail.x, tail.y, ' ', termbox.ColorDefault, termbox.ColorDefault)
 		s.Pop()
 	}
 }
 
 func (ctx *Context) Update() {
-	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	ctx.Move(ctx.snake)
 	for food := range ctx.foods {
 		food.Draw()
