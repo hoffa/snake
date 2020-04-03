@@ -43,12 +43,16 @@ type Context struct {
 	updated int64
 }
 
+func setCell(x, y, color int) {
+	termbox.SetCell(x, y, ' ', termbox.Attribute(color), termbox.AttrReverse)
+}
+
 func (c *Coord) Draw() {
 	if party {
-		termbox.SetCell(c.x, c.y, ' ', termbox.Attribute((color%6)+2), termbox.AttrReverse)
+		setCell(c.x, c.y, (color%6)+2)
 		color++
 	} else {
-		termbox.SetCell(c.x, c.y, ' ', termbox.Attribute(color), termbox.AttrReverse)
+		setCell(c.x, c.y, color)
 	}
 }
 
