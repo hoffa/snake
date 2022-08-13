@@ -172,13 +172,13 @@ func (ctx *Context) HandleKey(key termbox.Key) {
 }
 
 func main() {
-	speed := flag.Int64("speed", 9, "speed [0-10]")
+	speed := flag.Int64("speed", 9, "speed [0-20]")
 	flag.IntVar(&growAmount, "grow", 10, "grow amount per food")
-	flag.IntVar(&foodCount, "food", 5, "foods on screen")
+	flag.IntVar(&foodCount, "food", 10, "foods on screen")
 	flag.IntVar(&color, "color", 3, "color [0-9]")
 	flag.BoolVar(&party, "party", false, "enable party mode")
 	flag.Parse()
-	interval = int64(250-(250/10)*(*speed-1)) * int64(time.Millisecond)
+	interval = (250 * int64(time.Millisecond)) - ((25**speed)/2)*int64(time.Millisecond)
 
 	if err := termbox.Init(); err != nil {
 		panic(err)

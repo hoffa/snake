@@ -7,7 +7,7 @@
 ## Install
 
 ```
-go get github.com/hoffa/snake
+go install github.com/hoffa/snake@latest
 ```
 
 ## Play
