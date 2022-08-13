@@ -88,8 +88,7 @@ func NewContext() *Context {
 	}
 }
 
-func (ctx *Context) Move(s *Snake) {
-	w, h := termbox.Size()
+func (ctx *Context) Move(s *Snake, w, h int) {
 	c := *s.body[len(s.body)-1]
 	switch s.direction {
 	case Down:
@@ -123,14 +122,14 @@ func (ctx *Context) Move(s *Snake) {
 }
 
 func (ctx *Context) Update() {
-	ctx.Move(ctx.snake)
+	w, h := termbox.Size()
+	ctx.Move(ctx.snake, w, h)
 	for food := range ctx.foods {
 		if ctx.snake.Occupies(&food) {
 			ctx.snake.grow += growAmount
 			delete(ctx.foods, food)
 		}
 	}
-	w, h := termbox.Size()
 	for len(ctx.foods) < foodCount {
 		food := Coord{rand.Intn(w - 1), rand.Intn(h - 1)}
 		food.Draw()
