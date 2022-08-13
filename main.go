@@ -41,6 +41,7 @@ type Context struct {
 	snake   *Snake
 	foods   map[Coord]bool
 	updated int64
+	w, h    int
 }
 
 func setCell(x, y, color int) {
@@ -88,22 +89,22 @@ func NewContext() *Context {
 	}
 }
 
-func (ctx *Context) Move(s *Snake, w, h int) {
+func (ctx *Context) Move(s *Snake) {
 	c := *s.body[len(s.body)-1]
 	switch s.direction {
 	case Down:
-		c.y = (c.y + 1) % h
+		c.y = (c.y + 1) % ctx.h
 	case Right:
-		c.x = (c.x + 1) % w
+		c.x = (c.x + 1) % ctx.w
 	case Up:
 		c.y--
 		if c.y < 0 {
-			c.y += h
+			c.y += ctx.h
 		}
 	case Left:
 		c.x--
 		if c.x < 0 {
-			c.x += w
+			c.x += ctx.w
 		}
 	}
 	if s.Occupies(&c) {
@@ -123,7 +124,9 @@ func (ctx *Context) Move(s *Snake, w, h int) {
 
 func (ctx *Context) Update() {
 	w, h := termbox.Size()
-	ctx.Move(ctx.snake, w, h)
+	ctx.w = w
+	ctx.h = h
+	ctx.Move(ctx.snake)
 	for food := range ctx.foods {
 		if ctx.snake.Occupies(&food) {
 			ctx.snake.grow += growAmount
